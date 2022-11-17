@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module YoutubeInformation
+module TopPop
   module Entity
     # Aggregate root for contributions domain
     class FolderContributions < SimpleDelegator

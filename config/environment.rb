@@ -7,7 +7,7 @@ require 'sequel'
 require 'logger'
 require 'rack/session'
 
-module YoutubeInformation
+module TopPop
   # Configuration for the App
   class App < Roda
     plugin :environments

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module YoutubeInformation
+module TopPop
   module Mixins
     # line credit calculation methods
     module ScoreCalculator
