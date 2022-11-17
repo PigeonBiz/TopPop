@@ -7,36 +7,53 @@ task :default do
   puts `rake -T`
 end
 
+desc 'Run unit and integration tests'
+Rake::TestTask.new(:spec) do |t|
+  t.pattern = 'spec/tests/{integration,unit}/**/*_spec.rb'
+  t.warning = false
+end
+
 desc 'setup hidden files'
 task :setup do
   sh 'touch config/secrets.yml'
 end
 
-desc 'search new for once'
-task :searchnew do
-  sh 'ruby spec/fixtures/search_info.rb'
-end
-
-desc 'Run tests once'
+desc 'Run unit and integration tests'
 Rake::TestTask.new(:spec) do |t|
-  t.pattern = 'spec/*_spec.rb'
+  t.pattern = 'spec/tests/{integration,unit}/**/*_spec.rb'
   t.warning = false
 end
 
-desc 'Keep rerunning tests upon changes'
-task :respec do
-  sh "rerun -c 'rake spec' --ignore 'coverage/*'"
+desc 'Run acceptance tests'
+task :spec_accept do
+  puts 'NOTE: run app in test environment in another process'
+  sh 'ruby spec/tests/acceptance/acceptance_spec.rb'
 end
 
+desc 'Keep rerunning unit/integration tests upon changes'
+task :respec do
+  sh "rerun -c 'rake spec' --ignore 'coverage/*' --ignore 'repostore/*'"
+end
+
+desc 'Run the webserver and application'
 task :run do
   sh 'bundle exec puma'
 end
 
+desc 'Run the webserver and application and restart if code changes'
 task :rerun do
-  sh "rerun -c --ignore 'coverage/*' -- bundle exec puma"
+  sh "rerun -c --ignore 'coverage/*' --ignore 'repostore/*' -- bundle exec puma"
 end
 
-namespace :db do
+desc 'Generates a 64 by secret for Rack::Session'
+task :new_session_secret do
+  require 'base64'
+  require 'SecureRandom'
+  secret = SecureRandom.random_bytes(64).then { Base64.urlsafe_encode64(_1) }
+  puts "SESSION_SECRET: #{secret}"
+end
+
+namespace :db do # rubocop:disable Metrics/BlockLength
   task :config do
     require 'sequel'
     require_relative 'config/environment' # load config info
@@ -46,25 +63,26 @@ namespace :db do
   end
 
   desc 'Run migrations'
-  task :migrate => :config do
+  task migrate: :config do
     Sequel.extension :migration
     puts "Migrating #{app.environment} database to latest"
     Sequel::Migrator.run(app.DB, 'db/migrations')
   end
 
   desc 'Wipe records from all tables'
-  task :wipe => :config do
+  task wipe: :config do
     if app.environment == :production
       puts 'Do not damage production database!'
       return
     end
 
     require_app('infrastructure')
+    require_relative 'spec/helpers/database_helper'
     DatabaseHelper.wipe_database
   end
 
   desc 'Delete dev or test database file (set correct RACK_ENV)'
-  task :drop => :config do
+  task drop: :config do
     if app.environment == :production
       puts 'Do not damage production database!'
       return
@@ -79,7 +97,6 @@ desc 'Run application console'
 task :console do
   sh 'pry -r ./load_all'
 end
-
 
 namespace :vcr do
   desc 'delete cassette fixtures'

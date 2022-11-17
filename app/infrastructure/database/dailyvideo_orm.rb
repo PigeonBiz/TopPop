@@ -2,11 +2,11 @@
 
 require 'sequel'
 
-module ScoreInformation
+module YoutubeInformation
   # Model for Database
   module Database
-    # Object-Relational Mapper for Scores
-    class ScoreOrm < Sequel::Model(:scores)
+    # Object-Relational Mapper for Videos
+    class DailyVideoOrm < Sequel::Model(:daily_videos)
       plugin :timestamps, update_on_create: true
     end
   end

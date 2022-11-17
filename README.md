@@ -1,4 +1,4 @@
-# TopPop API Client
+# TopPop: Music Sorting Game
 
 ## Overview
 
