@@ -4,8 +4,9 @@ require_relative 'score_mapper'
 
 module PlayerInformation
   module Player
+    # search  and build
     class SearchMapper
-      def initialize(name, score, gateway_class = Player::Api)
+      def initialize(name, score, _gateway_class = Player::Api)
         @data['name'] = name
         @data['score'] = score
       end
